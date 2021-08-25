@@ -5,50 +5,48 @@ class Stats:
         self.min_number = 0
 
     def less(self, number):
-        result = 0
-        for _ in range(self.min_number, number):
-            result += self.data.get(_, 0)
-        return result
+        if number < self.min_number:
+            return 0
+        elif number > self.max_number:
+            return self.data.get(self.max_number, 0)
+        else:
+            return self.data.get(number - 1, 0)
 
     def between(self, from_n, to_n):
-        result = 0
-        start = from_n if from_n < to_n else to_n
-        end = from_n if from_n > to_n else to_n
-        for _ in range(start, end + 1):
-            result += self.data.get(_, 0)
+
+        start = self.min_number if from_n < self.min_number else from_n
+        end = self.max_number if to_n > self.max_number else to_n
+
+        result = self.data.get(end, 0) - self.data.get(start - 1, 0)
         return result
 
-    def greater(self, n):
-        result = 0
-        for _ in range(n + 1, self.max_number + 1):
-            result += self.data.get(_, 0)
-        return result
+    def greater(self, number):
+        if number < self.min_number:
+            self.data.get(self.max_number, 0)
+        elif number > self.max_number:
+            return 0
+        else:
+            return self.data.get(self.max_number, 0) - self.data.get(number, 0)
 
 
 class DataCapture:
     def __init__(self):
         self.stats = Stats()
-        self.raw_data = []
-        self.bof = False
+        self.raw_data = {}
 
     def add(self, number):
-        """Add item to raw data set or send to stats directly in case of bof (build on the fly)"""
-        if self.bof:
-            self.check_min_max(number)
-            self.stats.data.update({number: self.stats.data.get(number, 0) + 1})
-        else:
-            self.raw_data.append(number)
+        """Add item to raw data set"""
+        self.check_min_max(number)
+        self.raw_data.update({number: self.raw_data.get(number, 0) + 1})
 
     def build_stats(self):
         """Build stat data set"""
-        if self.bof:
-            return self.stats
+        result_i = 0
+        last = 0
+        for n in range(self.stats.min_number, self.stats.max_number + 1):
+            result_i += self.raw_data.get(n, 0)
+            self.stats.data.update({n: result_i})
 
-        for n in self.raw_data:
-            self.check_min_max(n)
-            self.stats.data.update({n: self.stats.data.get(n, 0) + 1})
-
-        self.raw_data = []
         return self.stats
 
     def check_min_max(self, n):
@@ -56,10 +54,3 @@ class DataCapture:
             self.stats.max_number = n
         if self.stats.min_number > n:
             self.stats.min_number = n
-
-    def build_on_fly(self, val):
-        """Building stats every time that is added it's also possible"""
-        # using an inline if to support 0,1 and Booleans
-        if self.raw_data:
-            self.build_stats()
-        self.bof = True if val else False

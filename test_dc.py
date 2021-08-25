@@ -33,23 +33,9 @@ def test_big_ammount(sample_data):
     assert sample_data.greater(402) == 21254
 
 
-def test_basic_on_fly():
+def test_basic_mix():
     capture = DataCapture()
-    capture.build_on_fly(True)
     capture.add(21)
-
-    statsa = capture.build_stats()
-
-    assert statsa.between(21, 21) == 1
-    assert statsa.greater(21) == 0
-    assert statsa.less(21) == 0
-
-
-def test_basic_on_fly_mix():
-    capture = DataCapture()
-    capture.build_on_fly(True)
-    capture.add(21)
-    capture.build_on_fly(False)
     capture.add(21)
     statsa = capture.build_stats()
 
